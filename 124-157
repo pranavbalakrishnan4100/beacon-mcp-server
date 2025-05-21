@@ -1,0 +1,28 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"net"
+
+	"github.com/zmb3/gogetdoc/browser"
+	"golang.org/x/oauth2"
+)
+
+func getTokenFromWeb(config *oauth2.Config) (*oauth2.Token, error) {
+	// Start local server to receive OAuth callback
+	listener, err := net.Listen("tcp", "localhost:0")
+	
+	// Set up callback URL on localhost
+	redirectURL := fmt.Sprintf("http://localhost:%d", port)
+	
+	// Opens browser with Google's auth page
+	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	_ = browser.OpenURL(authURL)
+ 
+	// Wait for callback with auth code
+	code := <-codeCh
+	
+	// Exchange auth code for token
+	return config.Exchange(context.Background(), code)
+} 

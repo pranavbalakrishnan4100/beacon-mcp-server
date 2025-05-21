@@ -1,0 +1,81 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/google/oauth2/clientcredentials"
+	"github.com/google/oauth2/google"
+	"github.com/google/oauth2/token"
+	"google.golang.org/api/drive/v3"
+)
+
+func Authorize() (*drive.Service, error) {
+	// Read credentials file (client ID & secret)
+	b, err := os.ReadFile(credsFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read client secret file: %v", err)
+	}
+
+	// Create OAuth config from credentials
+	config, err := google.ConfigFromJSON(b, drive.DriveReadonlyScope)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse client secret file to config: %v", err)
+	}
+
+	// Try to load existing token
+	tok, err := tokenFromFile(tokenPath)
+	if err != nil {
+		// If no token exists, get new one from web
+		tok, err = getTokenFromWeb(config)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get token from web: %v", err)
+		}
+		// Save the new token
+		err = saveToken(tokenPath, tok)
+		if err != nil {
+			return nil, fmt.Errorf("unable to save token: %v", err)
+		}
+	}
+
+	// Create a new context
+	ctx := context.Background()
+
+	// Create a new service using the token
+	service, err := drive.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, tok)))
+	if err != nil {
+		return nil, fmt.Errorf("unable to create drive service: %v", err)
+	}
+
+	return service, nil
+}
+
+func getTokenFromWeb(config *google.Config) (*oauth2.Token, error) {
+	// Implement the logic to get a new token from the web
+	// This is a placeholder and should be replaced with the actual implementation
+	return nil, fmt.Errorf("getTokenFromWeb not implemented")
+}
+
+func saveToken(path string, tok *oauth2.Token) error {
+	// Implement the logic to save the token to a file
+	// This is a placeholder and should be replaced with the actual implementation
+	return fmt.Errorf("saveToken not implemented")
+}
+
+func tokenFromFile(path string) (*oauth2.Token, error) {
+	// Implement the logic to load the token from a file
+	// This is a placeholder and should be replaced with the actual implementation
+	return nil, fmt.Errorf("tokenFromFile not implemented")
+}
+
+func main() {
+	service, err := Authorize()
+	if err != nil {
+		log.Fatalf("Unable to authorize: %v", err)
+	}
+
+	// Use the service as needed
+	fmt.Println("Authorization successful!")
+} 
